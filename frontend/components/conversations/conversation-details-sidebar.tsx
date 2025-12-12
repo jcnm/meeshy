@@ -893,8 +893,13 @@ export function ConversationDetailsSidebar({
   const [activeLanguageStats, setActiveLanguageStats] = useState<LanguageStats[]>([]);
   const [activeUsers, setActiveUsers] = useState<User[]>([]);
 
+  // CORRECTION: Normaliser l'ID pour comparaison cohérente
+  const sidebarCurrentUserId = currentUser?.id ? String(currentUser.id) : null;
+
   // Vérifier si l'utilisateur actuel est admin/modérateur de la conversation
-  const userMembership = conversation.participants?.find(p => p.userId === currentUser.id);
+  const userMembership = conversation.participants?.find(p =>
+    sidebarCurrentUserId && String(p.userId) === sidebarCurrentUserId
+  );
   const isAdmin = currentUser.role === UserRoleEnum.ADMIN ||
                   currentUser.role === UserRoleEnum.BIGBOSS ||
                   userMembership?.role === UserRoleEnum.ADMIN ||
@@ -958,15 +963,20 @@ export function ConversationDetailsSidebar({
           .sort((a, b) => b.count - a.count);
         
         setActiveLanguageStats(userStats);
-        
+
+        // CORRECTION: Normaliser l'ID pour comparaison cohérente
+        const statsCurrentUserId = currentUser?.id ? String(currentUser.id) : null;
+
         // Calculer les utilisateurs actifs - toujours inclure l'utilisateur actuel
         const activeParticipants = conversation.participants
-          .filter(p => p.user && (p.user.isOnline || p.userId === currentUser.id))
+          .filter(p => p.user && (p.user.isOnline || (statsCurrentUserId && String(p.userId) === statsCurrentUserId)))
           .map(p => p.user)
           .filter(Boolean) as User[];
 
         // Vérifier si l'utilisateur actuel est déjà dans la liste, sinon l'ajouter au début
-        const hasCurrentUser = activeParticipants.find(u => u.id === currentUser.id);
+        const hasCurrentUser = activeParticipants.find(u =>
+          statsCurrentUserId && String(u.id) === statsCurrentUserId
+        );
         const finalActiveUsers = hasCurrentUser
           ? activeParticipants
           : [currentUser, ...activeParticipants];
@@ -976,14 +986,18 @@ export function ConversationDetailsSidebar({
     };
 
     calculateLanguageStats();
-  }, [conversation.participants, messages]);
+  }, [conversation.participants, messages, currentUser]);
 
   const getConversationDisplayName = (conv: Conversation) => {
     if (conv.type !== 'direct') {
       return conv.title || t('conversationDetails.groupConversation');
     }
 
-    const otherParticipant = conv.participants?.find(p => p.userId !== currentUser.id);
+    // CORRECTION: Normaliser l'ID pour comparaison cohérente
+    const currentUserId = currentUser?.id ? String(currentUser.id) : null;
+    const otherParticipant = conv.participants?.find(p =>
+      currentUserId && String(p.userId) !== currentUserId
+    );
     if (otherParticipant && otherParticipant.user) {
       // Prioriser le displayName, sinon prénom/nom, sinon username
       return otherParticipant.user.displayName ||
@@ -998,7 +1012,11 @@ export function ConversationDetailsSidebar({
   const getConversationAvatarUrl = (conv: Conversation) => {
     if (conv.type === 'direct') {
       // Pour les conversations directes, retourner l'avatar de l'autre participant
-      const otherParticipant = conv.participants?.find(p => p.userId !== currentUser.id);
+      // CORRECTION: Normaliser l'ID pour comparaison cohérente
+      const currentUserId = currentUser?.id ? String(currentUser.id) : null;
+      const otherParticipant = conv.participants?.find(p =>
+        currentUserId && String(p.userId) !== currentUserId
+      );
       const participantUser = (otherParticipant as any)?.user;
       const avatarUrl = participantUser?.avatar;
       return avatarUrl;

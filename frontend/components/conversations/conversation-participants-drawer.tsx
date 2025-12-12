@@ -96,12 +96,16 @@ export function ConversationParticipantsDrawer({
     }
   }, [participants, setStoreParticipants]);
 
+  // CORRECTION: Normaliser l'ID de l'utilisateur courant pour comparaisons cohérentes
+  const currentUserId = currentUser?.id ? String(currentUser.id) : null;
+
   // Utiliser les participants du store (mis à jour en temps réel)
   // Fallback sur les props si le store est vide
   const activeParticipants = storeParticipants.length > 0
     ? participants.map(p => ({
         ...p,
-        user: storeParticipants.find(u => u.id === p.userId) || p.user
+        // CORRECTION: Normaliser les IDs pour comparaison cohérente
+        user: storeParticipants.find(u => String(u.id) === String(p.userId)) || p.user
       }))
     : participants;
 
@@ -115,7 +119,9 @@ export function ConversationParticipantsDrawer({
   };
 
   // Vérifier si l'utilisateur actuel est admin/moderator/creator
-  const currentUserParticipant = participants.find(p => p.userId === currentUser.id);
+  const currentUserParticipant = participants.find(p =>
+    currentUserId && String(p.userId) === currentUserId
+  );
   const isAdmin = currentUserParticipant?.role === UserRoleEnum.ADMIN ||
                   currentUserParticipant?.role === UserRoleEnum.CREATOR ||
                   currentUserParticipant?.role === UserRoleEnum.MODERATOR;
@@ -368,7 +374,8 @@ export function ConversationParticipantsDrawer({
                   <ScrollArea className="mt-3 max-h-[200px]">
                     <div className="space-y-2">
                       {searchResults.map((user) => {
-                        const isAlreadyMember = activeParticipants.some(p => p.userId === user.id);
+                        // CORRECTION: Normaliser les IDs pour comparaison cohérente
+                        const isAlreadyMember = activeParticipants.some(p => String(p.userId) === String(user.id));
                         return (
                           <div
                             key={user.id}

@@ -345,9 +345,10 @@ export const BubbleMessageNormalView = memo(function BubbleMessageNormalView({
   }, [conversationId, message.id, tBubble]);
 
   // Logique de permissions - FIXED: Utiliser currentAnonymousUserId pour les anonymes
+  // CORRECTION: Normaliser les IDs pour comparaison cohérente
   const isOwnMessage = isAnonymous
-    ? (currentAnonymousUserId && message.anonymousSenderId === currentAnonymousUserId)
-    : (currentUser && message.senderId === currentUser.id);
+    ? (currentAnonymousUserId && String(message.anonymousSenderId) === String(currentAnonymousUserId))
+    : (currentUser?.id && String(message.senderId) === String(currentUser.id));
   
   const canModifyMessage = () => {
     // Vérifier le délai de 24 heures pour les utilisateurs normaux

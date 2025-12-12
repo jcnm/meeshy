@@ -768,7 +768,10 @@ export function BubbleStreamPage({ user, conversationId = 'meeshy', isAnonymousM
     const currentIsAnonymous = isAnonymousModeRef.current;
 
     // CAS 1: Si c'est notre propre message et que sender/anonymousSender manque
-    if ((message.senderId === currentUser.id || message.anonymousSenderId === currentUser.id) &&
+    // CORRECTION: Normaliser les IDs pour comparaison cohérente
+    const enrichCurrentUserId = currentUser?.id ? String(currentUser.id) : null;
+    if (enrichCurrentUserId &&
+        (String(message.senderId) === enrichCurrentUserId || String(message.anonymousSenderId) === enrichCurrentUserId) &&
         !message.sender && !message.anonymousSender) {
       if (currentIsAnonymous) {
         enrichedMessage.anonymousSender = {

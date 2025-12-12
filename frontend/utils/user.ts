@@ -137,7 +137,11 @@ export function formatConversationTitle(
   }
   
   // Fallback pour compatibilité
-  const otherParticipants = participants.filter(p => p.userId !== currentUserId);
+  // CORRECTION: Normaliser les IDs pour comparaison cohérente
+  const normalizedCurrentUserId = currentUserId ? String(currentUserId) : null;
+  const otherParticipants = participants.filter(p =>
+    normalizedCurrentUserId && String(p.userId) !== normalizedCurrentUserId
+  );
   
   if (otherParticipants.length === 0) {
     return "Conversation vide";
@@ -179,10 +183,14 @@ export function formatConversationTitle(
  * Affiche: "🏴 username, 🏴 username, 🏴 username" (avec drapeaux des langues de lecture)
  */
 export function formatConversationTitleFromMembers(
-  participants: ThreadMember[], 
+  participants: ThreadMember[],
   currentUserId: string
 ): string {
-  const otherParticipants = participants.filter(p => p.userId !== currentUserId);
+  // CORRECTION: Normaliser les IDs pour comparaison cohérente
+  const normalizedCurrentUserId = currentUserId ? String(currentUserId) : null;
+  const otherParticipants = participants.filter(p =>
+    normalizedCurrentUserId && String(p.userId) !== normalizedCurrentUserId
+  );
   
   if (otherParticipants.length === 0) {
     return "Conversation vide";

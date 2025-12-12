@@ -61,11 +61,14 @@ export function ConversationParticipants({
 
   // Les typing users sont désormais passés par props pour éviter des abonnements socket multiples
 
+  // CORRECTION: Normaliser l'ID de l'utilisateur courant pour comparaisons cohérentes
+  const currentUserId = currentUser?.id ? String(currentUser.id) : null;
+
   // Filtrer les utilisateurs qui tapent dans cette conversation (exclure l'utilisateur actuel)
   // NOTE: Ne pas filtrer par conversationId car le backend normalise les IDs (ObjectId → identifier)
   // et le hook useMessaging ne remonte déjà que les événements de la conversation courante
   const usersTypingInChat = (typingUsers || []).filter((typingUser: { userId: string; conversationId: string }) =>
-    typingUser.userId !== currentUser.id
+    currentUserId && String(typingUser.userId) !== currentUserId
   );
 
 
@@ -79,7 +82,7 @@ export function ConversationParticipants({
 
   // Obtenir les noms des utilisateurs qui tapent
   const typingUserNames = usersTypingInChat.map((typingUser: { userId: string; conversationId: string }) => {
-    const participant = participants.find(p => p.userId === typingUser.userId);
+    const participant = participants.find(p => String(p.userId) === String(typingUser.userId));
     return participant?.user.displayName || participant?.user.username || typingUser.userId;
   });
 
@@ -112,7 +115,10 @@ export function ConversationParticipants({
   };
 
   // Trouver l'utilisateur connecté dans les participants ou l'ajouter
-  const currentUserParticipant = participants.find(p => p.userId === currentUser.id);
+  // CORRECTION: Utiliser currentUserId normalisé pour la comparaison
+  const currentUserParticipant = participants.find(p =>
+    currentUserId && String(p.userId) === currentUserId
+  );
   const allParticipantsIncludingCurrent = currentUserParticipant
     ? participants
     : [...participants, { userId: currentUser.id, user: currentUser, role: UserRoleEnum.MEMBER } as ThreadMember];
@@ -124,7 +130,9 @@ export function ConversationParticipants({
     displayParticipants = [currentUserParticipant];
     // Ajoute 2 autres participants (excluant l'utilisateur courant)
     displayParticipants = displayParticipants.concat(
-      allParticipantsIncludingCurrent.filter(p => p.userId !== currentUser.id).slice(0, 2)
+      allParticipantsIncludingCurrent.filter(p =>
+        currentUserId && String(p.userId) !== currentUserId
+      ).slice(0, 2)
     );
   } else {
     // Si l'utilisateur courant n'est pas dans la liste, prendre les 3 premiers
