@@ -2,24 +2,17 @@
  * Frontend Encryption Module
  *
  * Uses shared encryption logic with browser-specific adapters (Web Crypto API + IndexedDB).
+ * Includes Signal Protocol support for end-to-end encryption.
  */
 
-import { SharedEncryptionService } from '@/shared/encryption';
-import { webCryptoAdapter } from './adapters/web-crypto-adapter';
-import { indexedDBKeyStorageAdapter } from './adapters/indexeddb-key-storage-adapter';
+import { frontendEncryptionService, FrontendEncryptionService } from './FrontendEncryptionService';
 
-// Create frontend encryption service with browser adapters
-const frontendEncryptionService = new SharedEncryptionService({
-  cryptoAdapter: webCryptoAdapter,
-  keyStorage: indexedDBKeyStorageAdapter,
-});
-
-// Export the configured service
+// Export the singleton encryption service
 export const encryptionService = frontendEncryptionService;
-export { SharedEncryptionService as EncryptionService };
+export { FrontendEncryptionService };
 
 // Re-export adapters for advanced usage
-export { webCryptoAdapter, indexedDBKeyStorageAdapter };
+export { webCryptoAdapter, indexedDBKeyStorageAdapter } from './adapters';
 
 // Re-export shared types and utilities
 export type {

@@ -54,6 +54,16 @@ export const useAuthStore = create<AuthStore>()(
             isAuthenticated: !!user,
             isAuthChecking: false,
           });
+
+          // Initialize encryption service when user logs in
+          if (user?.id) {
+            // Fire and forget - don't block auth flow
+            import('@/lib/encryption').then(({ encryptionService }) => {
+              encryptionService.initialize(user.id).catch((error) => {
+                console.error('[AUTH_STORE] Failed to initialize encryption:', error);
+              });
+            });
+          }
         },
 
         setAuthChecking: (checking: boolean) => {
@@ -83,7 +93,14 @@ export const useAuthStore = create<AuthStore>()(
             isAuthChecking: false,
           });
 
-          // 2. CRITIQUE: Supprimer explicitement localStorage persist
+          // 2. Reset encryption service
+          import('@/lib/encryption').then(({ encryptionService }) => {
+            encryptionService.reset();
+          }).catch((error) => {
+            console.error('[AUTH_STORE] Failed to reset encryption:', error);
+          });
+
+          // 3. CRITIQUE: Supprimer explicitement localStorage persist
           // Support: SSR, iframes, WAP browsers
           if (typeof window !== 'undefined' && window.localStorage) {
             try {
