@@ -110,8 +110,14 @@ jobs:
             echo "frontend=true" >> $GITHUB_OUTPUT
             echo "gateway=true" >> $GITHUB_OUTPUT
             echo "translator=true" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]] || [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+            # Push to main/master - always build all services to ensure 'latest' tag is up-to-date
+            echo "🏷️ Push to main/master detected - building all services for 'latest' tag"
+            echo "frontend=true" >> $GITHUB_OUTPUT
+            echo "gateway=true" >> $GITHUB_OUTPUT
+            echo "translator=true" >> $GITHUB_OUTPUT
           else
-            # Detect changes from git diff
+            # Other branches - detect changes from git diff
             CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} 2>/dev/null || git diff --name-only HEAD~1 HEAD)
 
             # Only build services if their directory or shared/ is modified

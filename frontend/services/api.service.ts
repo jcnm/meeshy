@@ -38,7 +38,7 @@ class ApiService {
 
   constructor(config: Partial<ApiConfig> = {}) {
     this.config = {
-      timeout: 15000, // 15 seconds - augmenté pour les requêtes complexes (conversations, traductions)
+      timeout: 30000, // 30 seconds - augmenté pour les requêtes complexes (conversations, traductions, réactions)
       headers: {
         'Content-Type': 'application/json',
       },
